@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Funnel #2 Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one vertical pipe, read top to bottom. Rail with nodes on the left, stage in the middle, side paths on the right. Each stage carries its live links and a status chip. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #16202e;
+  --muted: #5b6676;
+  --line: #d5dbe4;
+  --navy: #1f3a5f;
+  --navy-ink: #ffffff;
+  --gold: #e3b341;
+  --gold-soft: #fbf1d6;
+  --gold-ink: #6b4c00;
+  --side: #eef2f7;
+  --link: #1f5fa8;
+  --ok-bg: #e3f4e8; --ok-ink: #1d6b38;
+  --sched-bg: #e4edf9; --sched-ink: #1f4f8f;
+  --wait-bg: #fcefd6; --wait-ink: #7a5200;
+  --none-bg: #eceef1; --none-ink: #5b6676;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151e; --surface: #17202c; --ink: #e8edf4; --muted: #9aa6b6; --line: #2c3746;
+    --navy: #3d6aa8; --navy-ink: #ffffff; --gold: #e3b341; --gold-soft: #3a2f12; --gold-ink: #f3d68a; --side: #1c2633;
+    --link: #8cb8ee;
+    --ok-bg: #173523; --ok-ink: #8fd9a8; --sched-bg: #1a2c45; --sched-ink: #a9c8f2;
+    --wait-bg: #3a2c10; --wait-ink: #f1cf86; --none-bg: #242d3a; --none-ink: #9aa6b6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151e; --surface: #17202c; --ink: #e8edf4; --muted: #9aa6b6; --line: #2c3746;
+  --navy: #3d6aa8; --navy-ink: #ffffff; --gold: #e3b341; --gold-soft: #3a2f12; --gold-ink: #f3d68a; --side: #1c2633;
+  --link: #8cb8ee;
+  --ok-bg: #173523; --ok-ink: #8fd9a8; --sched-bg: #1a2c45; --sched-ink: #a9c8f2;
+  --wait-bg: #3a2c10; --wait-ink: #f1cf86; --none-bg: #242d3a; --none-ink: #9aa6b6;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+
+header { display: grid; gap: 10px; margin-bottom: 28px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 14px; }
+.facts b { color: var(--ink); font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); margin-top: 4px; align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); background: var(--surface); }
+.sw.gold { background: var(--gold-soft); border-color: var(--gold); }
+.sw.navy { background: var(--navy); border-color: var(--navy); }
+.sw.side { background: var(--side); border-style: dashed; border-color: var(--muted); }
+.updated { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+/* status chips */
+.st { display: inline-block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.st.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.st.sched { background: var(--sched-bg); color: var(--sched-ink); }
+.st.wait { background: var(--wait-bg); color: var(--wait-ink); }
+.st.none { background: var(--none-bg); color: var(--none-ink); }
+
+.band { margin-top: 30px; }
+.band-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 16px; }
+.band-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; margin: 0; }
+.when { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.02em; color: var(--muted); }
+
+.sources { display: grid; gap: 12px; margin-inline: auto; width: 100%; }
+.sources.one { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+.sources.two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; }
+.src { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.src h3, .stage h3 { font-size: 15.5px; font-weight: 600; margin: 0; }
+.src p, .stage p, .side p { margin: 0; color: var(--muted); font-size: 14px; }
+.merge { display: flex; justify-content: center; padding-block: 6px; }
+.merge svg { width: min(100%, 640px); height: 34px; display: block; }
+.merge path { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.merge polygon { fill: var(--muted); }
+
+.row { display: grid; grid-template-columns: 34px minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 14px; position: relative; }
+.row + .row { margin-top: 12px; }
+.rail { position: relative; display: flex; justify-content: center; }
+.rail::before { content: ""; position: absolute; top: -12px; bottom: -12px; left: 50%; width: 2px; transform: translateX(-50%); background: var(--line); }
+.band .row:first-of-type .rail::before { top: 18px; }
+.band .row:last-of-type .rail::before { bottom: auto; height: 30px; }
+.node { position: relative; z-index: 1; width: 26px; height: 26px; margin-top: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); font-family: var(--font-mono); font-size: 11.5px; display: grid; place-items: center; color: var(--muted); }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 13px 16px; display: grid; gap: 4px; min-width: 0; }
+.stage.gold { background: var(--gold-soft); border-color: var(--gold); }
+.stage.gold .tag { color: var(--gold-ink); }
+.stage.navy { background: var(--navy); border-color: var(--navy); color: var(--navy-ink); }
+.stage.navy p, .stage.navy .meta, .stage.navy .links li { color: var(--navy-ink); opacity: 0.92; }
+.stage.navy a { color: var(--navy-ink); }
+.node.gold { border-color: var(--gold); color: var(--gold-ink); background: var(--gold-soft); }
+.node.navy { border-color: var(--navy); background: var(--navy); color: var(--navy-ink); }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 10px; }
+.tag { font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.meta .num { font-variant-numeric: tabular-nums; font-weight: 600; color: inherit; }
+.stage:not(.navy) .meta .num { color: var(--ink); }
+
+.links { list-style: none; margin: 6px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); display: grid; gap: 4px; font-size: 13.5px; }
+.stage.gold .links { border-top-color: var(--gold); }
+.stage.navy .links { border-top-color: rgba(255,255,255,0.25); }
+.links li { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; color: var(--muted); overflow-wrap: anywhere; }
+.links b { color: var(--ink); font-weight: 500; }
+.stage.navy .links b { color: var(--navy-ink); }
+
+.side { align-self: start; margin-top: 6px; border: 1px dashed var(--muted); background: var(--side); border-radius: 8px; padding: 10px 13px; display: grid; gap: 3px; position: relative; min-width: 0; }
+.side h4 { margin: 0; font-size: 13.5px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.side::before { content: ""; position: absolute; left: -15px; top: 18px; width: 14px; border-top: 1px dashed var(--muted); }
+.side-stack { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.side-stack .side { margin-top: 0; }
+.side-stack .side:first-child { margin-top: 6px; }
+
+.steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; }
+.steps span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+.steps i { font-style: normal; color: var(--muted); }
+
+.panel { margin-top: 36px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+.panel h2 { font-family: var(--font-display); font-weight: 600; font-size: 18px; margin: 0; }
+.panel ol, .panel ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); max-width: 72ch; }
+.panel li b { color: var(--ink); font-weight: 600; }
+.panel p { margin: 0; color: var(--muted); max-width: 72ch; }
+
+@media (max-width: 720px) {
+  .sources.two { grid-template-columns: minmax(0, 1fr); }
+  .merge svg { display: none; }
+  .merge { height: 26px; position: relative; padding: 0; }
+  .merge::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 50%; border-left: 1.5px solid var(--muted); }
+  .row { grid-template-columns: 30px minmax(0, 1fr); }
+  .side, .side-stack { grid-column: 2; margin-top: 8px; }
+  .side::before { display: none; }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Funnel #2: content to Skyrocket</h1>
+    <div class="facts">
+      <span>Webinar <b>Self-Rising Business Intensive, Wed 28 Oct, 7:00 PM</b></span>
+      <span>Ticket <b>₱6,000</b></span>
+      <span>Skyrocket cohort <b>6 seats</b></span>
+      <span>Launch <b>Fri 9 Oct</b></span>
+    </div>
+    <div class="legend">
+      <span><i class="sw gold"></i>A chance to win the sale</span>
+      <span><i class="sw navy"></i>Live webinar</span>
+      <span><i class="sw side"></i>Side path</span>
+      <span><i class="st ok">Live</i><i class="st sched">Scheduled</i><i class="st wait">Waiting</i><i class="st none">Not built</i></span>
+    </div>
+    <span class="updated">Updated Thu 8 Oct, evening</span>
+  </header>
+
+  <section class="band">
+    <div class="band-head"><h2>Get seen</h2><span class="when">LIVE FRI 9 OCT · INVITES FROM MON 12 OCT</span></div>
+    <div class="sources one">
+      <div class="src">
+        <div class="top"><span class="tag">Direct</span><span class="st ok">Kit ready</span></div>
+        <h3>Invites</h3>
+        <p>Past clients (Le-An, Coach Edwin). Qualified leads and QDB (Patrice, Mary). Coach Edwin's FB, IG and BNI. Copy and a tracked link for each channel are in the Kit tabs of the tracker.</p>
+        <ul class="links">
+          <li><b>Messages</b><a href="https://docs.google.com/spreadsheets/d/163CTh2L9d3hwsfwMyLiZZRkxIfXTPXRkvMnCFCAynyw/edit#gid=1484801101">Kit: Messages tab</a></li>
+          <li><b>Tracked links</b><a href="https://docs.google.com/spreadsheets/d/163CTh2L9d3hwsfwMyLiZZRkxIfXTPXRkvMnCFCAynyw/edit#gid=1466502738">Kit: Links tab</a></li>
+          <li><b>Day-by-day plan</b><a href="https://docs.google.com/spreadsheets/d/163CTh2L9d3hwsfwMyLiZZRkxIfXTPXRkvMnCFCAynyw/edit">Release Plan tab</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="merge" aria-hidden="true">
+      <svg viewBox="0 0 640 34" preserveAspectRatio="none">
+        <path d="M320 0 L320 8 C320 18, 213 14, 213 28"></path>
+        <path d="M320 8 C320 18, 427 14, 427 28"></path>
+        <polygon points="207,26 219,26 213,34"></polygon>
+        <polygon points="421,26 433,26 427,34"></polygon>
+      </svg>
+    </div>
+    <div class="sources two">
+      <div class="src">
+        <div class="top"><span class="tag">YouTube</span><span class="st sched">Edited, up Fri 9 Oct</span></div>
+        <h3>Long videos</h3>
+        <p>One every Friday, about 8 minutes. Each ends by pointing to the VSL.</p>
+        <ul class="links">
+          <li><b>Video 1, edited</b><a href="https://drive.google.com/file/d/19jLgvf0yXlOFwHC2yyTv10Pi7UQ9R1vu/view">Drive file</a></li>
+        </ul>
+      </div>
+      <div class="src">
+        <div class="top"><span class="tag">FB · IG · YT Shorts</span><span class="st sched">Batch 1 cut, from Sat 10 Oct</span></div>
+        <h3>Shorts</h3>
+        <p>5 cut from each long video. Posted Sat and Mon to Thu.</p>
+        <ul class="links">
+          <li><b>Video 1 shorts</b><a href="https://drive.google.com/drive/folders/17YpjM2xiTwaTCmxeIjOgAPQp0F3_XMDZ">Drive folder</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="merge" aria-hidden="true">
+      <svg viewBox="0 0 640 34" preserveAspectRatio="none">
+        <path d="M213 0 C213 18, 320 14, 320 28"></path>
+        <path d="M427 0 C427 18, 320 14, 320 28"></path>
+        <polygon points="314,26 326,26 320,34"></polygon>
+      </svg>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">1</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">YouTube, ~15 min</span><span class="st sched">Edited, up Fri 9 Oct</span></div>
+        <h3>VSL</h3>
+        <p>Problem, the advice that keeps owners stuck, the plan, proof, price. Sells the webinar. Description and pinned comment carry the tracked link to the webinar page.</p>
+        <div class="meta"><span>Goes out with long video 1</span></div>
+        <ul class="links">
+          <li><b>VSL, edited</b><a href="https://drive.google.com/file/d/1DfagdV4Ctaq1P8wFC6aVRbDDkyg7xeBu/view">Drive file</a></li>
+        </ul>
+      </div>
+      <div></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-head"><h2>Sign up and pay</h2><span class="when">LIVE NOW</span></div>
+    <div class="row">
+      <div class="rail"><span class="node">2</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Landing page</span><span class="st ok">Live</span></div>
+        <h3>Webinar page and registration form</h3>
+        <p>Date, time, what they walk away with, who it is and isn't for, ₱6,000, refund terms, replay window. The form asks name, mobile, email, company, role and monthly revenue, then sends them to payment.</p>
+        <ul class="links">
+          <li><b>Page</b><a href="https://www.coaching.edwinsoriano.com/intensive">coaching.edwinsoriano.com/intensive</a></li>
+          <li><b>Refund terms</b><a href="https://www.coaching.edwinsoriano.com/intensive-terms-page">/intensive-terms-page</a></li>
+          <li><b>Form on its own</b><a href="https://api.leadconnectorhq.com/widget/form/3vJKTUgu2Bxo63LHc2Gx">GHL form</a></li>
+        </ul>
+      </div>
+      <div class="side-stack">
+        <div class="side"><h4>Comment to DM (GHL) <span class="st wait">Fri 9 Oct</span></h4><p>A comment on the launch post gets a public reply and a DM with the link. Switched on once the launch post is up.</p></div>
+        <div class="side"><h4>Support chat <span class="st ok">Patrice</span></h4><p>Replies from the <a href="https://docs.google.com/document/d/1pKSkhBjmG6NHWqwG_k5In4R8cz0s8m4xxycdz0gqvMA/edit">Support Script</a>, one tab per situation, with Tagalog versions.</p></div>
+        <div class="side"><h4>Unpaid sign-ups <span class="st ok">Live</span></h4><p>Two nudge emails with the payment link, 1 hour and 24 hours after registering. They stop once the person pays.</p></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">3</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">PayMongo</span><span class="st ok">Live</span></div>
+        <h3>Payment</h3>
+        <p>Card, GCash or Maya on PayMongo's payment page.</p>
+        <div class="meta"><span>Target <span class="num">50</span> paid</span><span>Checks: <span class="num">15</span> by Wed 21 Oct, <span class="num">25</span> by Mon 26 Oct</span></div>
+        <ul class="links">
+          <li><b>₱6,000 page</b><a href="https://storefront.paymongo.com/self-rising-business-intensive">storefront.paymongo.com/self-rising-business-intensive</a></li>
+          <li><b>₱1 test page</b><a href="https://storefront.paymongo.com/intensive-test">storefront.paymongo.com/intensive-test</a></li>
+        </ul>
+      </div>
+      <div></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">4</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Automatic</span><span class="st ok">Live, tested 8 Oct</span></div>
+        <h3>Confirmation</h3>
+        <p>PayMongo receipt plus our own email from Coach Edwin, with Google Calendar and Apple/Outlook buttons. The team gets a sale alert by email.</p>
+        <ul class="links">
+          <li><b>Thank-you page</b><a href="https://www.coaching.edwinsoriano.com/intensive-confirmed">/intensive-confirmed</a></li>
+        </ul>
+      </div>
+      <div></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node gold">5</span></div>
+      <div class="stage gold">
+        <div class="top"><span class="tag">Chance 1 · Email</span><span class="st sched">Scheduled</span></div>
+        <h3>Reminders</h3>
+        <p>Sent to everyone who has paid, including people who buy later.</p>
+        <ul class="links">
+          <li><b>7 days</b>Wed 21 Oct, 9:00 AM</li>
+          <li><b>3 days</b>Sun 25 Oct, 6:00 PM</li>
+          <li><b>1 day, with Zoom link</b>Tue 27 Oct, 7:00 PM</li>
+          <li><b>1 hour, with Zoom link</b>Wed 28 Oct, 6:00 PM</li>
+        </ul>
+      </div>
+      <div class="side"><h4>Offer document <span class="st wait">Draft</span></h4><p>Buyers can apply early from it. Waiting on Coach Edwin and Coach Rezza's answers, then the application form. <a href="https://docs.google.com/document/d/1xt5qqEhOU8JcqpJzUihVIMF6Oz0i7vf89mJeBottb7I/edit">Read the draft</a></p></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-head"><h2>Webinar</h2><span class="when">WED 28 OCT · 7:00 PM</span></div>
+    <div class="row">
+      <div class="rail"><span class="node navy">6</span></div>
+      <div class="stage navy">
+        <div class="top"><span class="tag" style="color:inherit">Chance 2 · Live on Zoom, 2 hours</span><span class="st ok">Zoom link in</span></div>
+        <h3>Webinar with Coach Edwin</h3>
+        <p>Offer document and application link dropped in the chat. <a href="https://us02web.zoom.us/j/86480034023">Zoom meeting</a></p>
+        <div class="meta"><span>Target <span class="num">40</span> attend (80%)</span></div>
+      </div>
+      <div class="side"><h4>Replay <span class="st sched">Thu 29 Oct, 9 AM</span></h4><p>Email is scheduled. Needs the recording link by then. Up for 7 days.</p></div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-head"><h2>Enrol</h2><span class="when">THU 29 OCT TO FRI 6 NOV</span></div>
+    <div class="row">
+      <div class="rail"><span class="node gold">7</span></div>
+      <div class="stage gold">
+        <div class="top"><span class="tag">Chance 3 · 8 days</span><span class="st wait">Drafted</span></div>
+        <h3>Enrolment week</h3>
+        <p>Five follow-up emails: 30 Oct, 2, 4, 5 and 6 Nov. Written and loaded in GHL. Scheduled once the application link exists.</p>
+      </div>
+      <div></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">8</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Form</span><span class="st none">Not built</span></div>
+        <h3>Skyrocket application</h3>
+        <p>Group or V1P tick box. Card on file. Authorisation clause on the form itself. Waits on the charge decision.</p>
+        <div class="meta"><span>Target <span class="num">12</span> applications</span></div>
+      </div>
+      <div></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">9</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Internal</span></div>
+        <h3>Coach Edwin's fit review</h3>
+        <p>A call only when the application needs one.</p>
+      </div>
+      <div class="side"><h4>Redirect</h4><p>Another programme or Coach Rezza. Still counts as a win.</p></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">10</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Email + WhatsApp</span><span class="st none">Not built</span></div>
+        <h3>Approve and charge</h3>
+        <div class="steps"><span>Approve</span><i>→</i><span>Email + WhatsApp notice</span><i>→</i><span>Wait 24h</span><i>→</i><span>Charge</span><i>→</i><span>Congratulate</span></div>
+      </div>
+      <div class="side"><h4>Card declines <span class="st none">Not built</span></h4><p>Failed-payment email, then retry.</p></div>
+    </div>
+    <div class="row">
+      <div class="rail"><span class="node">11</span></div>
+      <div class="stage">
+        <div class="top"><span class="tag">Delivery</span></div>
+        <h3>Welcome and hand-off</h3>
+        <p>Cohort start date to be set.</p>
+        <div class="meta"><span>Target <span class="num">6</span> seats</span></div>
+      </div>
+      <div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Test it before Friday</h2>
+    <p>Ask one or two people outside the team. Use a real email and your own mobile number. Our system matches people by phone, so a made-up number can attach you to someone else's record.</p>
+    <ol>
+      <li><b>Register.</b> Open the webinar page, fill in the form and click Continue to payment. You should land on the ₱6,000 PayMongo page.</li>
+      <li><b>Leave without paying.</b> About an hour later you should get "Your seat isn't reserved yet" with the payment link.</li>
+      <li><b>Pay ₱1 on the test page</b> with the same email. Within a minute you should get the PayMongo receipt and "You're in: Wednesday 28 October, 7:00 PM". The team inbox gets a sale alert.</li>
+      <li><b>Check the calendar buttons</b> in the email and on the thank-you page. Both should add 28 Oct, 7 to 9 PM.</li>
+      <li><b>Reply to Veejay</b> with anything that looked wrong, slow or confusing.</li>
+    </ol>
+  </section>
+
+  <section class="panel">
+    <h2>Open</h2>
+    <ul>
+      <li><b>Launch post.</b> Which FB/IG post on Fri 9 Oct carries the comment-for-details line.</li>
+      <li><b>Replay link</b> by Thu 29 Oct, 9:00 AM.</li>
+      <li><b>Charge on approval.</b> Deposit, full amount or installment? Blocks the application form.</li>
+      <li><b>Cohort start</b> and the November webinar date.</li>
+    </ul>
+  </section>
+</div>
+
+</body>
+</html>
